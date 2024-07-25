@@ -66,6 +66,7 @@ void FrankaHandClient::applyGripperCommand(void) {
         gripper_->grasp(gripper_cmd_.width(), gripper_cmd_.speed(),
                         gripper_cmd_.force(), eps_inner, eps_outer);
   } else if (gripper_cmd_.stop()) {
+    spdlog::info("Stopping gripper");
     prev_cmd_successful_ = gripper_->stop();
   } else {
     spdlog::info("Moving to width {} at speed={}", gripper_cmd_.width(),
