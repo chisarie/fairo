@@ -107,7 +107,9 @@ class HybridJointImpedanceControl(toco.PolicyModule):
 
         # Reference pose
         self.joint_pos_desired = torch.nn.Parameter(to_tensor(joint_pos_current))
-        self.joint_vel_desired = torch.zeros_like(self.joint_pos_desired)
+        self.joint_vel_desired = torch.nn.Parameter(
+            to_tensor(torch.zeros_like(self.joint_pos_desired))
+        )
 
     def forward(self, state_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         """

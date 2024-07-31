@@ -709,6 +709,42 @@ class RobotInterface(BaseRobotInterface):
 
         return self.update_desired_joint_positions(joint_pos_desired)
 
+    def update_desired_ee_pose_custom(
+        self,
+        position1: torch.Tensor = None,
+        orientation1: torch.Tensor = None,
+        position2: torch.Tensor = None,
+        orientation2: torch.Tensor = None,
+        dt: float = 0.1,  # 10 Hz
+    ) -> int:
+        joint_pos_current = self.get_joint_positions()
+        ee_pos_current, ee_quat_current = self.get_ee_pose()
+        ee_pos_desired1 = ee_pos_current if position1 is None else position1
+        ee_quat_desired1 = ee_quat_current if orientation1 is None else orientation1
+        ee_pos_desired2 = ee_pos_desired1 if position2 is None else position2
+        ee_quat_desired2 = ee_quat_desired1 if orientation2 is None else orientation2
+
+        joint_pos_desired1, success = self.solve_inverse_kinematics(
+            ee_pos_desired1, ee_quat_desired1, joint_pos_current
+        )
+        if not success:
+            log.warning(
+                "Unable to find valid joint target. Skipping update_desired_ee_pose command..."
+            )
+            return -1
+        joint_pos_desired2, success = self.solve_inverse_kinematics(
+            ee_pos_desired2, ee_quat_desired2, joint_pos_current
+        )
+        if not success:
+            log.warning(
+                "Unable to find valid joint target. Skipping update_desired_ee_pose command..."
+            )
+            return -1
+        joint_vel_desired = (joint_pos_desired2 - joint_pos_desired1) / dt
+        self.update_desired_joint_positions(joint_pos_desired1)
+        self.update_desired_joint_velocities(joint_vel_desired)
+        return 0
+
     def start_joint_velocity_control(
         self, joint_vel_desired, hz=None, Kq=None, Kqd=None, **kwargs
     ):
