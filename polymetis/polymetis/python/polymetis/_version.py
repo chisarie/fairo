@@ -23,7 +23,8 @@ else:
 
     # Git describe output
     stream = os.popen("git describe --tags")
-    version_string = [line for line in stream][0]
+    versions_list = [line for line in stream]
+    version_string = versions_list[0] if len(versions_list) > 0 else "v1.0-1251-g0a01a7fa7"
 
     # Modify to same format as conda env variable GIT_DESCRIBE_NUMBER
     version_items = version_string.strip("\n").split("-")
